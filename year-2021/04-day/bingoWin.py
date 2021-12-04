@@ -45,6 +45,28 @@ def bingoFirstWin(fn):
             except Exception as e:
                 pass
 
+def bingoLastWin(fn):
+    calls, cards, w, h = getLines(fn)
+    marks = [0] * len(cards)
+    winPatterns = genWinPattern(w, h)
+    winnerList = []
+    for nthCall, call in enumerate(calls):
+        for idx, card in enumerate(cards):
+            if idx not in winnerList:
+                try:
+                    match = cards[idx].index(call)
+                    marks[idx] |= 1 << match
+                    if bitMatch(marks[idx], winPatterns):
+                        winnerList.append(idx)
+                        if len(winnerList) == len(cards):
+                            return (cards[idx], calls[0:nthCall + 1])
+                except Exception as e:
+                    pass
+
 winner, calls = bingoFirstWin("bingoCards.in.txt")
 diff = list(set(winner) - set(calls))
-print(sum(diff) * calls.pop())
+print(sum(diff) * calls.pop(), " -> first winner")
+
+winner, calls = bingoLastWin("bingoCards.in.txt")
+diff = list(set(winner) - set(calls))
+print(sum(diff) * calls.pop(), " -> last winner")
