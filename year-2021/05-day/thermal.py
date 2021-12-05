@@ -39,5 +39,15 @@ for coord in coords:
                 visitMap[(x, y1)] += 1
             else:
                 visitMap[(x, y1)] = 1
+    elif abs(x2 - x1) == abs(y2 - y1):
+        xs = 1 if x2 > x1 else -1
+        ys = 1 if y2 > y1 else -1
+        xR1, xR2 = x1, x2 + xs
+        yR1, yR2 = y1, y2 + ys
+        for x, y in zip(range(xR1, xR2, xs), range(yR1, yR2, ys)):
+            if (x, y) in visitMap:
+                visitMap[(x, y)] += 1
+            else:
+                visitMap[(x, y)] = 1
 
 print(len([v for k,v in visitMap.items() if v > 1]))
