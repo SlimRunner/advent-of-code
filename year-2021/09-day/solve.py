@@ -75,5 +75,5 @@ grid = getLines("input.in.txt")
 
 vTotal, valleys = getValleys(grid)
 print(vTotal)
-basins = sorted([findBasinSize(grid, [vs]) for vs in valleys])[-3:]
+basins = sorted(findBasinSize(grid, valleys))[-3:]
 print(reduce((lambda x, y: x * y), basins))
