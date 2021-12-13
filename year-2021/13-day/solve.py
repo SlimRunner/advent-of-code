@@ -3,12 +3,8 @@ def main():
     f1 = foldit(points, rules[0:1])
     fn = foldit(points, rules)
     
-    print("fold 1: ", len(f1), "points")
-    
-    print("\npaste the following block in Desmos to visualize code")
-    print("=" * 80)
-    print(getDesmosPoints(fn))
-    print("=" * 80)
+    print("fold 1: ", len(f1), "points\n")
+    printCode(list(fn))
 
 def getLines(fn):
     pts = []
@@ -35,6 +31,22 @@ def getDesmosPoints(pts):
         output += "\\left(" + str(p[0]) + "," + str(p[1]) + "\\right),"
     output = output[:-1] + "\\right]"
     return output
+
+def printCode(points):
+    lPoints = {}
+    for p in points:
+        if p[1] not in lPoints:
+            lPoints[p[1]] = [p[0]]
+        else:
+            lPoints[p[1]].append(p[0])
+    xmax = max(points, key = lambda x: x[0])[0]
+    ymax = max(points, key = lambda x: x[1])[1]
+    for y in range(0, ymax + 1):
+        line = [" "] * (xmax + 1)
+        if y in lPoints:
+            for dot in lPoints[y]:
+                line[dot] = "*"
+        print("".join(line))
 
 def foldit(points, rules):
     folded = set()
