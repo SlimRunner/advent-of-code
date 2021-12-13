@@ -45,7 +45,7 @@ def printCode(points):
         line = [" "] * (xmax + 1)
         if y in lPoints:
             for dot in lPoints[y]:
-                line[dot] = "*"
+                line[dot] = "█"
         print("".join(line))
 
 def foldit(points, rules):
