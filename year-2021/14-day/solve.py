@@ -1,21 +1,18 @@
 import re
 
 def main():
-    seed, rules = getLines("input.in.txt")
-    for i in range(0, 10):
-        seed = applyRules(seed, rules)
-    freq = {}
-    for char in seed:
-        if char in freq:
-            freq[char] += 1
-        else:
-            freq[char] = 1
-    diff = freq[max(freq, key = freq.get)] - freq[min(freq, key = freq.get)]
-    print(diff)
+    S, R = getLines("input.in.txt")
+    LC = {}
+    P = getPairs(S, LC)
+    for i in range(0,10):
+        P = applyRules(P, R, LC)
+    print("10 iterations:", dictDiff(LC, LC))
+    for i in range(10,40):
+        P = applyRules(P, R, LC)
+    print("40 iterations:",dictDiff(LC, LC))
 
 def getLines(fn):
     template = ''
-    
     with open(fn) as f:
         template = f.readline().strip()
         subs = []
@@ -29,19 +26,45 @@ def getLines(fn):
             line = f.readline()
     return (template, subs)
 
-def applyRules(seed, rules):
-    idx = 0
-    pairs = []
+def dictDiff(a, b):
+    return a[max(a, key = a.get)] - b[min(b, key = b.get)]
+
+def addVK(d, k, v):
+    if k in d:
+        d[k] += v
+    else:
+        d[k] = v
+
+def getPairs(seed, lCount):
+    pairs = {}; idx = 0
     while idx < len(seed) - 1:
+        addVK(lCount, seed[idx], 1)
         pair = seed[idx] + seed[idx + 1]
-        for rule in rules:
-            if rule[0].find(pair) >= 0:
-                pair = rule[1] + pair[1]
-                break
-        pairs.append(pair)
+        if pair in pairs:
+            pairs[pair] += 1
+        else:
+            pairs[pair] = 1
         idx += 1
-    pairs.insert(0, seed[0])
-    return "".join(pairs)
+    addVK(lCount, seed[idx], 1)
+    return pairs
+
+def applyRules(P, R, LC):
+    NP = {}
+    for p,v in P.items():
+        for r in R:
+            if r[0].find(p) >= 0:
+                np = p[0] + r[1]
+                addVK(LC, r[1], v)
+                if np in NP:
+                    NP[np] += v
+                else:
+                    NP[np] = v
+                np = r[1] + p[1]
+                if np in NP:
+                    NP[np] += v
+                else:
+                    NP[np] = v
+    return NP
 
 if __name__ == '__main__':
     main()
