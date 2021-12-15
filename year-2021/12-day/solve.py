@@ -43,11 +43,11 @@ def countPaths(nodes, exempt, visited, cave):
     ]
     paths = 0
     for t in tour:
-        paths += backTrack(nodes, exempt, visited, t)
+        paths += countPaths(nodes, exempt, visited, t)
     visited[cave] = False
     return paths
 
-def countPathsTwin(nodes, exempt, visited, cave):
+def countPathsTwin(nodes, exempt, visited, cave, twin):
     # TIL: this is called backtracking
     if cave == len(nodes) - 1: return 1
     visited[cave] = True
@@ -57,7 +57,7 @@ def countPathsTwin(nodes, exempt, visited, cave):
     ]
     paths = 0
     for t in tour:
-        paths += backTrack(nodes, exempt, visited, t)
+        paths += countPathsTwin(nodes, exempt, visited, t, twin)
     visited[cave] = False
     return paths
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     caveMap, bigCaves = makeNodeArray(nodePairs)
     print(caveMap, '\n', bigCaves)
     
-    paths1 = backTrack(caveMap, bigCaves, [False] * nSize, 0)
-    paths2 = countPathsTwin(caveMap, bigCaves, [False] * nSize, 0)
+    paths1 = countPaths(caveMap, bigCaves, [False] * nSize, 0)
+    paths2 = countPathsTwin(caveMap, bigCaves, [False] * nSize, 0, False)
     print(paths1)
     print(paths2)
