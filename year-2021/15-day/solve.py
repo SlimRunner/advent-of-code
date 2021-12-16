@@ -1,69 +1,61 @@
 import operator
 
 def main():
-    M = getLines("input.in.txt")
-    
-    print(M)
+    G, M = getLines("input.in.txt")
+    T = DFS(G, M)
+    # printGrid(G)
+    # printGrid(M)
+    print("\n", T)
+
+def DFS(G, M):
+    queue = [(0,0)]
+    M[0][0] = 0
+    while len(queue) > 0:
+        here = queue.pop(0)
+        queue.extend(updateGrid(G, M, here))
+    w, h = len(M[0]), len(M)
+    return M[h-1][w-1]
 
 def getLines(fn):
     output = []
+    distmap = []
     with open(fn) as f:
         line = f.readline()
         while line:
             line = line.strip()
             output.append([int(l) for l in line])
+            distmap.append([-1 for l in line])
             line = f.readline()
-    return output
-
-def traverse(M):
-    h, w = len(M), len(M[0])
-    V = [[False for cl in range(0, w)] for rw in range(0, h)]
-    paths = [[(0,0), V, 0]]
-    while IDK:
-        NP = []
-        for i, [l, v, s] in enumerate(paths):
-            x, y = l
-            v[y][x] = True
-            np, ns = seekSmall(M, l, v)
-            NP.append([])
-            
-            
-        paths = seekSmall(M, L, V)
-
-def travBT(M, L, V):
-    xl, yl = L
-    if L == (len(M), len(M[0])):
-        return M[yl][xl]
-    S = 0
-    paths = seekSmall(M, L, V)
-    for p in paths:
-        
-    return S
+    return (output, distmap)
 
 # map, location, visited
-def seekSmall(M, L, V):
+def updateGrid(G, M, L):
+    w, h = len(G[0]), len(G)
     # cross paths
+    ns = []
     xl, yl = L
-    NB = [(0,1),(0,-1),(1,0),(-1,0)]
-    LB = [(x + xl, y + yl) for (x, y) in NB]
-    nm = [M[y][x] for (x, y) in LB if not V[y][x]]
-    small, val = getSmall(nm)
-    LB = [lb for i, lb in enumerate(LB) if i in small]
-    return (LB, val)
+    NB = [(0,1),(1,0),(0,-1),(-1,0)]
+    LNB = [(x + xl, y + yl) for (x, y) in NB]
+    LNB = [(x, y) for (x,y) in LNB if 0 <= x < w and 0 <= y < h]
+    for (x, y) in LNB:
+        here = G[y][x] + M[yl][xl]
+        if M[y][x] == -1:
+            M[y][x] = here
+            ns.append((x, y))
+        elif M[y][x] > here:
+            M[y][x] = here
+            ns.append((x, y))
+    return ns
 
-def getSmall(L):
-    idxs = []
-    m = L[0]
-    for i, l in enumerate(L):
-        if m == l:
-            idxs.append(i)
-        elif l < m:
-            m = l
-            idxs.clear()
-            idxs.append(i)
-        else:
-            pass
-    return (idxs, m)
+def printGrid(grid):
+    print()
+    nmax = len(str(max(max(grid, key=max))))
+    for rows in grid:
+        pout = ' '.join([
+            " "*(nmax-len(str(n))) + (str(n) if n >= 0 else "*")
+            for n in rows
+        ])
+        print(pout)
 
 if __name__ == '__main__':
     main()
