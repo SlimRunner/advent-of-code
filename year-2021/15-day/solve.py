@@ -1,11 +1,19 @@
+import sys
 import operator
 
-def main():
+def main(args):
     G, M = getLines("input.in.txt")
     T = DFS(G, M)
-    # printGrid(G)
-    # printGrid(M)
-    print("\n", T)
+    if "-v" in args:
+        printGrid(G)
+        printGrid(M)
+    print("\nPart 1" + str(T))
+    bG, bM = retile(G, 5)
+    bT = DFS(bG, bM)
+    if "-v" in args:
+        printGrid(bG)
+        printGrid(bM)
+    print("\nPart 2" + str(bT))
 
 def DFS(G, M):
     queue = [(0,0)]
@@ -15,6 +23,16 @@ def DFS(G, M):
         queue.extend(updateGrid(G, M, here))
     w, h = len(M[0]), len(M)
     return M[h-1][w-1]
+
+def retile(G, sc):
+    w, h = len(G[0]), len(G)
+    W, H = w * sc, h * sc
+    bG = [
+        [(G[y % h][x % w] + x // w + y // h - 1) % 9 + 1
+            for x in range(0, W)]
+        for y in range(0, H)]
+    bM = [[-1 for x in range(0, W)] for y in range(0, H)]
+    return (bG, bM)
 
 def getLines(fn):
     output = []
@@ -58,4 +76,4 @@ def printGrid(grid):
         print(pout)
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
