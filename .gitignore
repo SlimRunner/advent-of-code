@@ -1,5 +1,7 @@
 # ignore input files
 *.in.txt
+*.out.txt
+*.ex.txt
 
 # ignore code not meant to be part of a day's solution
 discarded.py
