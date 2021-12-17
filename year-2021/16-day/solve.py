@@ -2,13 +2,22 @@ import sys
 from math import prod
 
 def main(args):
+    visargs = "-a" in args
     H = getLines("input.in.txt")
     B = list(hex2bin(H))
-    PK = []
-    print(''.join(B))
-    H, S = binParser(B)
-    print(str(H).replace("\'", "\""))
-    print("vsum: ", sumVersions(H))
+    T = packetParser(B.copy())
+    if visargs or "-h" in args:
+        print("\nhex stream")
+        print(H)
+    if visargs or "-b" in args:
+        print("\nbit stream")
+        print(''.join(B))
+    if visargs or "-t" in args:
+        print("\npacket tree")
+        print(str(T).replace("\'", "\""))
+    print()
+    print("vsum: ", sumVersions(T))
+    print("ops : ", operateBin(T))
 
 def sumVersions(H):
     if H["type"] == 4: return H["ver"]
@@ -36,49 +45,31 @@ def operateBin(H):
     elif H["type"] == 7:
         return 1 if ds[0] == ds[1] else 0
 
-def binParser(B):
-    if ''.join(B).replace("0", "") == "": return None
-    packs = []
-    pack = {}
-    S = 0
-    go = True
-    while go:
-        v, b = popBits(B, 3)
-        pack = {"ver": v}
-        v, b = popBits(B, 3)
-        pack["type"] = v
-        S += 6
-        if pack["type"] == 4:
-            d, s = getPackets(B)
-            S += s
-            pack["data"] = d
-            go = False
+def packetParser(B):
+    v = popBits(B, 3)[0]
+    t = popBits(B, 3)[0]
+    P = {"ver": v, "type": t, "size": 6}
+    if t == 4:
+        P["data"], s = getPackets(B)
+        P["size"] += s
+    else:
+        lt = popBits(B, 1)[0]
+        n = 15 if lt == 0 else 11
+        L = popBits(B, n)[0]
+        P["size"] += n + 1
+        if lt:
+            # packet count
+            P["data"] = [packetParser(B) for _ in range(0, L)]
+            P["size"] += sum(p["size"] for p in P["data"])
         else:
-            lt, _ = popBits(B, 1)
-            # lt == 0: bit length
-            # lt == 1: packet count
-            D = []
-            L, _ = popBits(B, 11 if lt else 15)
-            if lt: # packet count
-                for _ in range(0, L):
-                    TUP = binParser(B)
-                    if TUP is None: break
-                    d, s = TUP
-                    S += s
-                    D.append(d)
-            else: # bit length
-                s = 0
-                while s < L:
-                    TUP = binParser(B)
-                    if TUP is None: break
-                    d, si = TUP
-                    s += si
-                    D.append(d)
-                S += s
-            pack["data"] = D
-            go = False
-        packs.append(pack)
-    return *packs, S
+            # bit length
+            NB = popElem(B, L)
+            pc = []
+            while len(NB) > 0:
+                pc.append(packetParser(NB))
+            P["data"] = pc
+            P["size"] += L
+    return P
 
 def getPackets(B):
     size = 0
@@ -104,6 +95,11 @@ def popBits(B, n):
     b = ''.join(B[:n])
     for i in range(0, n): del B[0]
     return (int(b, 2), b)
+
+def popElem(B, n):
+    b = B[:n]
+    for i in range(0, n): del B[0]
+    return b
 
 def hex2bin(hex):
     arr = [bin(int(n, 16))[2:] for n in hex]
