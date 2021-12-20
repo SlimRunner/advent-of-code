@@ -6,7 +6,11 @@ def main(args):
         algo, image = getLines("data.ex.txt", pred = pre)
     else:
         algo, image = getLines("data.in.txt", pred = pre)
-    enhance = recConvo(image, algo, 2)
+    C = 50 if "-p2" in args else 2
+    if "-set" in args:
+        v = args.index("-set") + 1
+        C = int(args[v])
+    enhance = recConvo(image, algo, C)
     if "-v" in args:
         printGrid(image)
         printGrid(enhance)
@@ -88,9 +92,6 @@ def printGrid(grid):
     nmax = len(str(max(max(grid, key=max))))
     for rows in grid:
         pout = ' '.join([
-            # "•" if n else "·"
-            # "•" if n else " "
-            # "█" if n else "░"
             "▄" if n else "."
             for n in rows
         ])
