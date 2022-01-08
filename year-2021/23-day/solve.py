@@ -13,41 +13,57 @@ def main(args):
         lobby = getLines("data.ex.txt", pred = pre)
     else:
         lobby = getLines("data.in.txt", pred = pre)
-    printMap(lobby)
-    E1 = getEnergy(lobby, {})
-    print("part 1", E1)
-    getFolds(lobby)
-    printMap(lobby)
-    E2 = getEnergy(lobby, {})
-    print("part 2", E2)
+    lobby2 = getFolds(lobby)
+    E1, H1 = getEnergy(lobby, {})
+    print(f"part 1: {E1}", end = "\r")
+    E2, H2 = getEnergy(lobby2, {})
+    if "-v" in args:
+        print("=" * 40)
+        print(f"Total energy: {E1}, steps: {len(H1)}\n")
+        printHist(H1, E1)
+        print("=" * 40)
+        print(f"Total energy: {E2}, steps: {len(H2)}\n")
+        printHist(H2, E2)
+        print("\nANSWERS")
+    print(f"part 1: {E1}")
+    print(f"part 2: {E2}")
 
 def getEnergy(lobby, cache):
     if getKeys(lobby) in cache:
-        return cache[getKeys(lobby)]
-    energy = None
+        return cache[getKeys(lobby)]#(a, b)
     if isSolved(lobby):
-        return 0
+        return (0, [(lobby, 0)])
+    energy = None
+    hist = None
     for w in getWalkers(lobby):
         for m in getMoves(lobby, w):
             newL = acopy(lobby)
             cost = getman(w, m) * getCost(swap(newL, w, m))
-            newE = getEnergy(newL, cache)
+            newE, newH = getEnergy(newL, cache)
             if newE is not None:
                 newE += cost
                 if energy is None:
+                    hist = newH
                     energy = newE
-                else:
-                    energy = min(energy, newE)
-    cache[getKeys(lobby)] = energy
-    return energy
+                elif newE < energy:
+                    energy = newE
+                    hist = newH
+    hist = (lobby, energy) if hist is None else [(lobby, energy), *hist]
+    cache[getKeys(lobby)] = (energy, hist)
+    return (energy, hist)
 
 def getKeys(lobby):
     return tuple("".join(l) for l in lobby)
 
+def printHist(h, emax):
+    for m, e in h:
+        print(f"energy: {emax - e}")
+        printMap(m)
+
 def printMap(l):
-    print()
     for i in l:
         print(''.join(i))
+    print()
 
 def isSolved(lobby):
     solved = True
@@ -151,10 +167,12 @@ def swap(l, a, b):
     return l[y2][x2]
 
 def getFolds(lobby):
+    lobby2 = acopy(lobby)
     arr = ["  #D#C#B#A#  ", "  #D#B#A#C#  "]
     a, b = [[c for c in s] for s in arr]
-    lobby.insert(3, b)
-    lobby.insert(3, a)
+    lobby2.insert(3, b)
+    lobby2.insert(3, a)
+    return lobby2
 
 def getLines(fn, **kw):
     pred = (lambda x: x) if "pred" not in kw else kw["pred"]
