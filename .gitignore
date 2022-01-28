@@ -1,3 +1,6 @@
+# ignore g++ output files
+bin
+
 # ignore input files
 *.in.txt
 *.out.txt
