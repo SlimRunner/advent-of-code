@@ -33,6 +33,6 @@ def countKernelIncrease(nList, kSize):
             s1 += nList[index] - nList[index - kSize]
     return count
 
-rNums = getLines("depthReport.in.txt")
+rNums = getLines("data.in.txt")
 print(countIncrease(rNums))
 print(countKernelIncrease(rNums, 3))
