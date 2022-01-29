@@ -10,7 +10,7 @@
   using std::cout; \
   using std::cin; \
   using std::endl; \
-  using std::string; \
+  using std::string;
 
 enum class Command { FORWARD, DOWN, UP };
 using intPair = std::pair<int, int>;
