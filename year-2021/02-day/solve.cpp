@@ -12,11 +12,11 @@
   using std::endl; \
   using std::string; \
 
+enum class Command { FORWARD, DOWN, UP };
+using intPair = std::pair<int, int>;
+using comPairs = std::vector<std::pair<std::string, int>>;
 using argmap = std::map<std::string, std::string>;
 
-enum class Command { FORWARD, DOWN, UP };
-
-// USE .at() command because [] errors out on const maps
 const std::map<std::string, Command> MOVES = {
   {"forward", Command::FORWARD},
   {"down", Command::DOWN},
@@ -51,30 +51,61 @@ bool haveKey(std::string key, argmap args) {
   return args.find(key) != args.end();
 }
 
+intPair getNaivePiloting(comPairs P) {
+  int s = 0, d = 0;
+  for (auto p = P.begin(); p != P.end(); ++p) {
+    switch (MOVES.at(p->first)) {
+      case Command::FORWARD:
+        s += p->second;
+        break;
+      case Command::DOWN:
+        d += p->second;
+        break;
+      case Command::UP:
+        d -= p->second;
+        break;
+    }
+  }
+  return intPair(s, d);
+}
+
+intPair getExpertPiloting(comPairs P) {
+  int s = 0, d = 0, a = 0;
+  for (auto p = P.begin(); p != P.end(); ++p) {
+    switch (MOVES.at(p->first)) {
+      case Command::FORWARD:
+        s += p->second;
+        d += a * p->second;
+        break;
+      case Command::DOWN:
+        a += p->second;
+        break;
+      case Command::UP:
+        a -= p->second;
+        break;
+    }
+  }
+  return intPair(s, d);
+}
+
+int pairProduct(intPair p) {
+  return p.first * p.second;
+}
+
 int main(int argc, char const *argv[]) {
   IO_USE;
   const argmap params = getArgs(argc, argv);
   std::ifstream infile("data.in.txt");
   string line;
-  int depth = 0, pos = 0;
+  comPairs comms;
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
     std::string comm;
     int value;
-    iss >> comm;
-    iss >> value;
-    switch (MOVES.at(comm)) {
-      case Command::FORWARD:
-        pos += value;
-        break;
-      case Command::DOWN:
-        depth += value;
-        break;
-      case Command::UP:
-        depth -= value;
-        break;
-    }
+    iss >> comm >> value;
+    comms.push_back(std::make_pair(comm, value));
   }
-  cout << "part 1: " << pos * depth << endl;
+  cout << "part 1: " << pairProduct(getNaivePiloting(comms)) << endl;
+  cout << "part 2: " << pairProduct(getExpertPiloting(comms)) << endl;
   return 0;
 }
