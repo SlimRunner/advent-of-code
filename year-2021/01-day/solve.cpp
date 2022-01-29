@@ -38,7 +38,7 @@ argmap getArgs(int argc, char const *argv[]) {
   return comms;
 }
 
-bool haveKey(std::string key, argmap args) {
+bool hasKey(std::string key, argmap args) {
   return args.find(key) != args.end();
 }
 
@@ -68,8 +68,12 @@ int nthKernelSum(std::vector<int> v, int n) {
 
 int main(int argc, char const *argv[]) {
   IO_USE;
-  argmap params = getArgs(argc, argv);
-  std::ifstream infile("data.in.txt");
+  const argmap params = getArgs(argc, argv);
+  std::string filename = "data.in.txt";
+  if (hasKey("-f", params)) {
+    filename = params.at("-f");
+  };
+  std::ifstream infile(filename);
   string line;
   std::vector<int> nums;
   while (std::getline(infile, line)) {
