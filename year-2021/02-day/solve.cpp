@@ -14,6 +14,15 @@
 
 using argmap = std::map<std::string, std::string>;
 
+enum class Command { FORWARD, DOWN, UP };
+
+// USE .at() command because [] errors out on const maps
+const std::map<std::string, Command> MOVES = {
+  {"forward", Command::FORWARD},
+  {"down", Command::DOWN},
+  {"up", Command::UP}
+};
+
 argmap getArgs(int argc, char const *argv[]) {
   if (argc == 1) {
     return argmap();
@@ -42,43 +51,30 @@ bool haveKey(std::string key, argmap args) {
   return args.find(key) != args.end();
 }
 
-int nthKernelSum(std::vector<int> v, int n) {
-  int count = 0;
-  int curr = 0, prev = 0;
-  bool first = true;
-  for (
-    auto it = v.begin(), ht = v.begin();
-    it != v.end(); ++it
-  ) {
-    if (first) {
-      first = false;
-      for (size_t i = 0; i < n; i++) {
-        curr += *it;
-        if (i < n - 1) ++it;
-      }
-    } else {
-      curr += *it - *ht;
-      if (curr > prev) ++count;
-      ++ht;
-    }
-    prev = curr;
-  }
-  return count;
-}
-
 int main(int argc, char const *argv[]) {
   IO_USE;
-  argmap params = getArgs(argc, argv);
+  const argmap params = getArgs(argc, argv);
   std::ifstream infile("data.in.txt");
   string line;
-  std::vector<int> nums;
+  int depth = 0, pos = 0;
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
-    int num;
-    iss >> num;
-    nums.push_back(num);
+    std::string comm;
+    int value;
+    iss >> comm;
+    iss >> value;
+    switch (MOVES.at(comm)) {
+      case Command::FORWARD:
+        pos += value;
+        break;
+      case Command::DOWN:
+        depth += value;
+        break;
+      case Command::UP:
+        depth -= value;
+        break;
+    }
   }
-  cout << "part 1: " << nthKernelSum(nums, 1) << endl;
-  cout << "part 2: " << nthKernelSum(nums, 3) << endl;
+  cout << "part 1: " << pos * depth << endl;
   return 0;
 }

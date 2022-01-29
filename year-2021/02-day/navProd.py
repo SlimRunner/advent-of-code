@@ -40,7 +40,7 @@ def part2(commList):
             tally["aim"] -= cVal
     return tally["disp"] * tally["depth"]
 
-commLines = getLines("navReport.in.txt")
+commLines = getLines("data.in.txt")
 
 print(part1(commLines))
 print(part2(commLines))
