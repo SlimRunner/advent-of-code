@@ -79,8 +79,9 @@ int main(int argc, char const *argv[]) {
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
     int num;
-    iss >> num;
-    nums.push_back(num);
+    if (iss >> num) {
+      nums.push_back(num);
+    }
   }
   cout << "part 1: " << nthKernelSum(nums, 1) << endl;
   cout << "part 2: " << nthKernelSum(nums, 3) << endl;

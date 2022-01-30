@@ -106,8 +106,9 @@ int main(int argc, char const *argv[]) {
     std::istringstream iss(line);
     std::string comm;
     int value;
-    iss >> comm >> value;
-    comms.push_back(std::make_pair(comm, value));
+    if (iss >> comm >> value) {
+      comms.push_back(std::make_pair(comm, value));
+    }
   }
   cout << "part 1: " << pairProduct(getNaivePiloting(comms)) << endl;
   cout << "part 2: " << pairProduct(getExpertPiloting(comms)) << endl;
