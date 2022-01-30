@@ -80,7 +80,7 @@ def getBinFreq(nList):
             output |= 1 << idx
     return (output, output ^ ((1 << length) - 1))
 
-binRep = getLines("binRep.in.txt")
+binRep = getLines("data.in.txt")
 gamma, epsilon = getBinFreq(binRep)
 print((gamma, epsilon))
 print(prod((gamma, epsilon)))
