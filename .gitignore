@@ -1,5 +1,6 @@
 # ignore g++ output files
 bin
+.vscode
 
 # ignore input files
 *.in.txt
