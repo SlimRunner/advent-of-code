@@ -63,10 +63,10 @@ def bingoLastWin(fn):
                 except Exception as e:
                     pass
 
-winner, calls = bingoFirstWin("bingoCards.in.txt")
+winner, calls = bingoFirstWin("data.in.txt")
 diff = list(set(winner) - set(calls))
 print(sum(diff) * calls.pop(), " -> first winner")
 
-winner, calls = bingoLastWin("bingoCards.in.txt")
+winner, calls = bingoLastWin("data.in.txt")
 diff = list(set(winner) - set(calls))
 print(sum(diff) * calls.pop(), " -> last winner")
