@@ -1,15 +1,15 @@
-#include <iostream>
-#include <string>
-#include <sstream>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
-#include <vector>
 #include <map>
+#include <vector>
 
-#define IO_USE \
-  using std::cout; \
-  using std::cin; \
-  using std::endl; \
+#define IO_USE                                                                 \
+  using std::cout;                                                             \
+  using std::cin;                                                              \
+  using std::endl;                                                             \
   using std::string;
 
 using argmap = std::map<std::string, std::string>;
@@ -46,19 +46,20 @@ int nthKernelSum(std::vector<int> v, int n) {
   int count = 0;
   int curr = 0, prev = 0;
   bool first = true;
-  for (
-    auto it = v.begin(), ht = v.begin();
-    it != v.end(); ++it
-  ) {
+  for (auto it = v.begin(), ht = v.begin(); it != v.end(); ++it) {
     if (first) {
       first = false;
       for (size_t i = 0; i < n; i++) {
         curr += *it;
-        if (i < n - 1) ++it;
+        if (i < n - 1) {
+          ++it;
+        }
       }
     } else {
       curr += *it - *ht;
-      if (curr > prev) ++count;
+      if (curr > prev) {
+        ++count;
+      }
       ++ht;
     }
     prev = curr;

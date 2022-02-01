@@ -1,15 +1,15 @@
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <fstream>
 
-#include <vector>
-#include <map>
 #include <list>
+#include <map>
+#include <vector>
 
-#define IO_USE \
-  using std::cout; \
-  using std::cin; \
-  using std::endl; \
+#define IO_USE                                                                 \
+  using std::cout;                                                             \
+  using std::cin;                                                              \
+  using std::endl;                                                             \
   using std::string;
 
 using intpair = std::pair<int, int>;
@@ -43,9 +43,7 @@ bool hasKey(std::string key, argmap args) {
   return args.find(key) != args.end();
 }
 
-int pairProduct(intpair p) {
-  return p.first * p.second;
-}
+int pairProduct(intpair p) { return p.first * p.second; }
 
 std::vector<int> getTally(const std::vector<std::string> &bits) {
   std::vector<int> tally(bits.at(0).size());
@@ -70,22 +68,27 @@ intpair getGreekRates(const std::vector<int> &tally, size_t size) {
   return intpair(bf, bf ^ ((1 << bins) - 1));
 }
 
-intpair getElemRating(const std::vector<std::string> &bits, const std::vector<int> &tally) {
+intpair getElemRating(const std::vector<std::string> &bits,
+                      const std::vector<int> &tally) {
   size_t tsize = tally.size();
-  bool splitOne =  2 * tally.at(0) >= static_cast<int>(bits.size());
+  bool splitOne = 2 * tally.at(0) >= static_cast<int>(bits.size());
   char bitMode = splitOne ? '1' : '0'; // mode as in statistics
   std::list<std::string> oxy, co2;
   std::vector<int> tOxy(tsize), tCo2(tsize);
-  auto addTally = [](std::string s, std::vector<int> &L, bool subtract = false) {
-    for (size_t i = 0; i < s.size(); ++i){
-      if (s.at(i) == '1') L.at(i) += subtract ? -1 : 1;
+  auto addTally = [](std::string s, std::vector<int> &L,
+                     bool subtract = false) {
+    for (size_t i = 0; i < s.size(); ++i) {
+      if (s.at(i) == '1')
+        L.at(i) += subtract ? -1 : 1;
     }
   };
   auto binStr = [](std::string s) {
     int out = 0;
     size_t digs = s.size();
     for (size_t i = 0; i < digs; ++i) {
-      if (s.at(i) == '1') out |= 1 << (digs - i - 1);
+      if (s.at(i) == '1') {
+        out |= 1 << (digs - i - 1);
+      }
     }
     return out;
   };
@@ -99,7 +102,6 @@ intpair getElemRating(const std::vector<std::string> &bits, const std::vector<in
       addTally(*it, tCo2);
     }
   }
-  
 
   for (size_t i = 1; i < tsize && oxy.size() > 1; ++i) {
     splitOne = 2 * tOxy.at(i) >= static_cast<int>(oxy.size());
@@ -128,7 +130,7 @@ intpair getElemRating(const std::vector<std::string> &bits, const std::vector<in
       }
     }
   }
-  
+
   return intpair(binStr(oxy.front()), binStr(co2.front()));
 }
 
@@ -149,7 +151,7 @@ int main(int argc, char const *argv[]) {
   }
   std::vector<int> tally = getTally(bits);
   auto gammaEp = getGreekRates(tally, bits.size());
-  auto OxyCo2 =  getElemRating(bits, tally);
+  auto OxyCo2 = getElemRating(bits, tally);
   if (hasKey("-v", params)) {
     cout << std::endl << "RATES" << std::endl;
     cout << "  gamma: " << gammaEp.first;
