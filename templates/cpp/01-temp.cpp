@@ -1,15 +1,15 @@
-#include <iostream>
-#include <string>
-#include <sstream>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
-#include <vector>
 #include <map>
+#include <vector>
 
-#define IO_USE \
-  using std::cout; \
-  using std::cin; \
-  using std::endl; \
+#define IO_USE                                                                 \
+  using std::cout;                                                             \
+  using std::cin;                                                              \
+  using std::endl;                                                             \
   using std::string;
 
 using argmap = std::map<std::string, std::string>;
@@ -54,11 +54,11 @@ int main(int argc, char const *argv[]) {
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
     /* declare variables */
-    if (/* pull data from line*/) {
+    if (false /* pull data from line*/) {
       /* process data */
     }
   }
-  cout << "part 1: " << "" << endl;
+  cout << "part 1: " << 0 << endl;
   // cout << "part 2: " << "" << endl;
   return 0;
 }
