@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -14,6 +15,7 @@
 
 using argmap = std::map<std::string, std::string>;
 using coordinate = std::pair<int, int>;
+using coordmap = std::map<coordinate, int>;
 using lineSeg = std::pair<coordinate, coordinate>;
 
 argmap getArgs(int argc, char const *argv[]) {
@@ -69,6 +71,44 @@ lineSeg parseLine(std::string src) {
   return lineSeg(x, y);
 }
 
+int countOverlaps(std::vector<lineSeg> lines) {
+  coordmap field;
+  int overlaps = 0;
+  for (auto line = lines.begin(); line != lines.end(); ++line) {
+    int x1, y1, x2, y2;
+    std::tie(x1, y1) = line->first;
+    std::tie(x2, y2) = line->second;
+    if (x1 > x2) {
+      std::swap(x1, x2);
+    }
+    if (y1 > y2) {
+      std::swap(y1, y2);
+    }
+    if (x1 == x2) {
+      for (int y = y1; y <= y2; ++y) {
+        coordinate here(x1, y);
+        if (field.find(here) == field.end()) {
+          field.insert(std::make_pair(here, 1));
+        } else {
+          ++field.at(here);
+          overlaps += field.at(here) == 2 ? 1 : 0;
+        }
+      }
+    } else if (y1 == y2) {
+      for (int x = x1; x <= x2; ++x) {
+        coordinate here(x, y1);
+        if (field.find(here) == field.end()) {
+          field.insert(std::make_pair(here, 1));
+        } else {
+          ++field.at(here);
+          overlaps += field.at(here) == 2 ? 1 : 0;
+        }
+      }
+    }
+  }
+  return overlaps;
+}
+
 int main(int argc, char const *argv[]) {
   IO_USE;
   const argmap params = getArgs(argc, argv);
@@ -81,12 +121,20 @@ int main(int argc, char const *argv[]) {
   std::vector<lineSeg> lines;
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
-    /* declare variables */
     if (line.size()) {
       lines.push_back(parseLine(iss.str()));
     }
   }
-  cout << "part 1: " << 0 << endl;
+  std::vector<lineSeg> horzLines;
+  auto filterFunc = [](lineSeg line) {
+    coordinate a, b;
+    std::tie(a, b) = line;
+    return a.first == b.first && a.second == b.second;
+  };
+  std::copy_if(lines.begin(), lines.end(), std::back_inserter(horzLines),
+               filterFunc);
+  /* ds */
+  cout << "part 1: " << countOverlaps(lines) << endl;
   // cout << "part 2: " << "" << endl;
   return 0;
 }
