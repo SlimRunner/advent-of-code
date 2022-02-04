@@ -24,7 +24,7 @@ def getLines(fn):
 
 def solution(**kwargs):
     doDiags = kwargs.get("doDiags", False)
-    coords, nMax, nMin = getLines("thermalLines.in.txt")
+    coords, nMax, nMin = getLines("data.in.txt")
     visitMap = {}
 
     for coord in coords:
