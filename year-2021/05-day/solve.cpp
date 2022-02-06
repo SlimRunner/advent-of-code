@@ -4,7 +4,9 @@
 #include <string>
 
 #include <algorithm>
+#include <chrono>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 #define IO_USE                                                                 \
@@ -13,10 +15,18 @@
   using std::endl;                                                             \
   using std::string;
 
+class coord_hash; // forward declaration
 using argmap = std::map<std::string, std::string>;
 using coordinate = std::pair<int, int>;
-using coordmap = std::map<coordinate, int>;
+using coordmap = std::unordered_map<coordinate, int>;
 using lineSeg = std::pair<coordinate, coordinate>;
+
+template <> class std::hash<coordinate> {
+public:
+  std::size_t operator()(const coordinate &k) const {
+    return std::hash<int>()(k.first) ^ std::hash<int>()(k.second);
+  }
+};
 
 argmap getArgs(int argc, char const *argv[]) {
   if (argc == 1) {
@@ -73,6 +83,8 @@ lineSeg parseLine(std::string src) {
 
 int countOverlaps(std::vector<lineSeg> lines) {
   coordmap field;
+  field.reserve(0x8000);
+  field.max_load_factor(0.3);
   int overlaps = 0;
   for (auto line = lines.begin(); line != lines.end(); ++line) {
     int x1, y1, x2, y2;
@@ -87,25 +99,28 @@ int countOverlaps(std::vector<lineSeg> lines) {
     if (x1 == x2) {
       for (int y = y1; y <= y2; ++y) {
         coordinate here(x1, y);
-        if (field.find(here) == field.end()) {
+        auto fit = field.find(here);
+        if (fit == field.end()) {
           field.insert(std::make_pair(here, 1));
         } else {
-          ++field.at(here);
-          overlaps += field.at(here) == 2 ? 1 : 0;
+          ++(fit->second);
+          overlaps += fit->second == 2 ? 1 : 0;
         }
       }
     } else if (y1 == y2) {
       for (int x = x1; x <= x2; ++x) {
         coordinate here(x, y1);
-        if (field.find(here) == field.end()) {
+        auto fit = field.find(here);
+        if (fit == field.end()) {
           field.insert(std::make_pair(here, 1));
         } else {
-          ++field.at(here);
-          overlaps += field.at(here) == 2 ? 1 : 0;
+          ++(fit->second);
+          overlaps += fit->second == 2 ? 1 : 0;
         }
       }
     }
   }
+  std::cout << field.bucket_count() << std::endl;
   return overlaps;
 }
 
@@ -134,7 +149,12 @@ int main(int argc, char const *argv[]) {
   std::copy_if(lines.begin(), lines.end(), std::back_inserter(horzLines),
                filterFunc);
   /* ds */
-  cout << "part 1: " << countOverlaps(lines) << endl;
+  auto A = std::chrono::high_resolution_clock::now();
+  countOverlaps(lines);
+  auto B = std::chrono::high_resolution_clock::now();
+  cout << std::chrono::duration_cast<std::chrono::microseconds>(B - A).count()
+       << endl;
+  // cout << "part 1: " << countOverlaps(lines) << endl;
   // cout << "part 2: " << "" << endl;
   return 0;
 }
