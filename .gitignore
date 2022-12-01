@@ -1,6 +1,7 @@
 # ignore g++ output files
 bin
 .vscode
+.pdb
 
 # ignore input files
 *.in.txt

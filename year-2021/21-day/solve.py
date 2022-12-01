@@ -1,5 +1,6 @@
 import sys
 import re
+from itertools import product
 
 def main(args):
     pre = lambda x: x
@@ -9,28 +10,87 @@ def main(args):
         data = getLines("data.in.txt", pred = pre)
     p1, p2 = [findStart(i) - 1 for i in data]
     print("part 1: ", warmupWin(p1, p2))
-    # print(quantumWin(p1, p2, 0, 0, True, []))
+    print(quantumWin(p1, p2, 3, 2))
+    # my answer: 309196008717909
+    # 4961122
+    # 143173
 
-def quantumWin(p1, p2, v1, v2, turn, cache):
-    print(p1, p2, v1, v2, turn, cache)
-    if v1 > 5: return (1, 0)
-    if v2 > 5: return (0, 1)
-    # if (p1, p2)
-    # a = [sum(i) for i in list(product([1,2,3],[1,2,3],[1,2,3]))]
-    # {v:a.count(v) for v in set(a)}
-    throws = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
-    w1, w2 = 0, 0
-    for t in throws:
+def quantumWin(p1, p2, dn, lim):
+    tr = [list(range(1, dn + 1)) for _ in range(1, dn + 1)]
+    tset = [sum(i) for i in list(product(*tr))]
+    slate = {v:tset.count(v) for v in set(tset)}
+    # stack = [((0,0), (p1, p2), k, v, True) for k,v in slate.items()]
+    # foo = {}
+    # return (qRecWin(0, 0, p1, p2, 0, 0, True, slate, 21, foo), foo)
+    return qRecWin(0, 0, p1, p2, 0, 0, True, slate, lim, {})
+
+def qRecWin(s1, s2, p1, p2, throw, fact, turn, slate, lim, cache):
+    if (p1, p2, throw % 10) in cache:
+        return tuple(i * fact for i in cache[(p1, p2, throw % 10)])
+    win1, win2 = 0, 0
+    for t, freq in slate.items():
+        print(t)
         if turn:
-            w1, w2 = quantumWin(
-                (p1 + t) % 10, p2,
-                v1 + p1 + 1, v2,
-                not turn, [])
+            pn = (p1 + throw) % 10
+            if (s1 + pn + 1) >= lim:
+                w1, w2 = (fact, 0)
+            w1, w2 = qRecWin(
+                s1 + pn + 1, s2, pn, p2,
+                t + throw, freq + fact,
+                not turn, slate, lim, cache)
         else:
-            w1, w2 = quantumWin(
-                p1, (p2 + t) % 10,
-                v1, v2 + p2 + 1,
-                not turn, [])
+            pn = (p2 + throw) % 10
+            if (s2 + pn + 1) >= lim:
+                w1, w2 = (0, fact)
+            w1, w2 = qRecWin(
+                s1, s2 + pn + 1, p1, pn,
+                t + throw, freq + fact,
+                not turn, slate, lim, cache)
+        win1 += w1
+        win2 += w2
+    cache[(p1, p2, throw % 10)] = (win1, win2)
+    return (win1, win2)
+
+def qIterWin(p1, p2, dn, lim):
+    tr = [list(range(1, dn + 1)) for _ in range(1, dn + 1)]
+    tset = [sum(i) for i in list(product(*tr))]
+    slate = {v:tset.count(v) for v in set(tset)}
+    print(slate)
+    stack = [((0,0), (p1, p2), k, v, True) for k,v in slate.items()]
+    w1, w2 = 0, 0
+    i = 0
+    m, M = len(stack), len(stack)
+    mode = {}
+    while len(stack) > 0:
+        # L = len(stack)
+        # if L in mode:
+        #     mode[L] += 1
+        # else:
+        #     mode[L] = 1
+        # m = min(m, len(stack))
+        # M = max(M, len(stack))
+        # if (i % 100000) == 0: print("(", m, M, max(mode, key=mode.get), ")", len(stack), end = "\r")
+        # if (i % 100000) == 0:
+        #     print(w1, w2)
+            # print(stack[-1])
+        i += 1
+        (s1, s2), (p1, p2), throw, freq, turn = stack.pop()
+        if turn:
+            p1 = (p1 + throw) % 10
+            s1 += p1 + 1
+        else:
+            p2 = (p2 + throw) % 10
+            s2 += p2 + 1
+        if s1 >= lim:
+            w1 += freq
+            continue
+        elif s2 >= lim:
+            w2 += freq
+            continue
+        else:
+            stack.extend([
+                ((s1, s2), (p1, p2), k + throw, v + freq, not turn)
+                for k,v in slate.items()])
     return (w1, w2)
 
 def warmupWin(p1, p2):
