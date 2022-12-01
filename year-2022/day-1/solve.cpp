@@ -54,7 +54,6 @@ int main(int argc, char const *argv[]) {
   string line;
   std::vector<int> elves;
   elves.push_back(0);
-  std::vector<int> largest;
 
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
@@ -69,9 +68,8 @@ int main(int argc, char const *argv[]) {
 
   int top3 = 0;
   std::sort(elves.begin(), elves.end());
-  cout << "part 1: " << largest.back() << endl;
+  cout << "part 1: " << elves.back() << endl;
   for (size_t i = 0; i < 3; ++i) {
-    cout << elves.back() << endl;
     top3 += elves.back();
     elves.pop_back();
   }
