@@ -8,6 +8,7 @@
 #include <map>
 #include <tuple>
 #include <vector>
+#include <array>
 
 #define IO_USE                                                                 \
   using std::cout;                                                             \

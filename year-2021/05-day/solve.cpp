@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <map>
 #include <vector>
+#include <array>
 
 #define IO_USE                                                                 \
   using std::cout;                                                             \
