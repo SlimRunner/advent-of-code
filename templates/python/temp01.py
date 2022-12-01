@@ -4,13 +4,9 @@ import re
 def main(args):
     pre = lambda x: x
     if "-ex" in args:
-        lobby = getLines("data.ex.txt", pred = pre)
+        lines = getLines("data.ex.txt", pred = pre)
     else:
-        lobby = getLines("data.in.txt", pred = pre)
-    lobby2 = getFolds(lobby)
-    E1, H1 = getEnergy(lobby, {})
-    print(f"part 1: {E1}", end = "\r")
-    E2, H2 = getEnergy(lobby2, {})
+        lines = getLines("data.in.txt", pred = pre)
     if "-somearg" in args:
         pass # process or react to argument
     # print your output
