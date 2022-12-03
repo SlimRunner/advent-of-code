@@ -36,20 +36,36 @@ int main(int argc, char const *argv[]) {
   for (auto &&line : input) {
     string a = line.substr(0, line.length() / 2);
     string b = line.substr(line.length() / 2, line.length() / 2);
-    // cout << a << "," << b << '\n';
+    
     for (size_t i = 0; i < a.length(); ++i) {
-      bool isrep = (b.find(a[i]) == string::npos ? false : true);
+      bool isrep = b.find(a[i]) != string::npos;
       if (isrep) {
         int ofs = a[i] - (a[i] < 'a' ? 'A' - 27 : 'a' - 1);
-        cout << a[i] << ": " << ofs << '\n';
         rsum += ofs;
         break;
       }
     }
   }
   
+  int gsum = 0;
+  for (size_t i = 0; i < input.size(); i += 3) {
+    string a = input[i];
+    string b = input[i + 1];
+    string c = input[i + 2];
+
+    for (size_t j = 0; j < a.length(); ++j)
+    {
+      bool isrep = b.find(a[j]) != string::npos && c.find(a[j]) != string::npos;
+      if (isrep) {
+        int ofs = a[j] - (a[j] < 'a' ? 'A' - 27 : 'a' - 1);
+        gsum += ofs;
+        break;
+      }
+    }
+  }
+
   cout << "part 1: " << rsum << endl;
-  // cout << "part 2: " << "" << endl;
+  cout << "part 2: " << gsum << endl;
   return 0;
 }
 
