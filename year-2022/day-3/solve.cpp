@@ -32,8 +32,23 @@ int main(int argc, char const *argv[]) {
   if (hasKey("-v", params)) {
     printLines(input);
   }
-
-  cout << "part 1: " << 0 << endl;
+  int rsum = 0;
+  for (auto &&line : input) {
+    string a = line.substr(0, line.length() / 2);
+    string b = line.substr(line.length() / 2, line.length() / 2);
+    // cout << a << "," << b << '\n';
+    for (size_t i = 0; i < a.length(); ++i) {
+      bool isrep = (b.find(a[i]) == string::npos ? false : true);
+      if (isrep) {
+        int ofs = a[i] - (a[i] < 'a' ? 'A' - 27 : 'a' - 1);
+        cout << a[i] << ": " << ofs << '\n';
+        rsum += ofs;
+        break;
+      }
+    }
+  }
+  
+  cout << "part 1: " << rsum << endl;
   // cout << "part 2: " << "" << endl;
   return 0;
 }
