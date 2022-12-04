@@ -10,6 +10,7 @@
 #include <map>
 #include <tuple>
 #include <vector>
+#include <regex>
 
 #define IO_USE                                                                 \
   using std::cout;                                                             \
@@ -33,8 +34,39 @@ int main(int argc, char const *argv[]) {
     printLines(input);
   }
 
-  cout << "part 1: " << 0 << endl;
-  // cout << "part 2: " << "" << endl;
+  int fulls = 0;
+  int semis = 0;
+  for (auto &&line : input) {
+    int state = 0;
+    string buff = "";
+    std::vector<int> range;
+    for (size_t i = 0; i < line.length(); ++i) {
+      if (line[i] == '-' || line[i] == ',') {
+        range.push_back(std::stoi(buff));
+        buff = "";
+      } else {
+        buff += line[i];
+      }
+    }
+    range.push_back(std::stoi(buff));
+    // for (auto &e : range) {cout << e << " ";}
+    // cout << '\n';
+    if (
+      range[0] >= range[2] && range[1] <= range[3] ||
+      range[0] <= range[2] && range[1] >= range[3]
+    ) {
+        ++fulls;
+    }
+    if (
+      !(range[0] < range[2] && range[1] < range[2] ||
+      range[0] > range[3] && range[1] > range[3])
+    ) {
+      ++semis;
+    }
+  }
+
+  cout << "part 1: " << fulls << endl;
+  cout << "part 2: " << semis << endl;
   return 0;
 }
 
