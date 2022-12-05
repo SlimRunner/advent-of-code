@@ -38,6 +38,7 @@ int main(int argc, char const *argv[]) {
   const int LN = (input.front().length() + 1) / 4;
   cout << "SIZE " << SZ << endl;
   cout << "LEN " << LN << endl;
+  cout << "\n\n";
   std::vector<vecstring> map(LN);
   bool parseMap = true;
   for (auto &&line : input) {
@@ -72,9 +73,10 @@ int main(int argc, char const *argv[]) {
       int from = std::stoi(nums[2].str()) - 1;
       int to = std::stoi(nums[3].str()) - 1;
       for (size_t i = 0; i < me; ++i) {
-        // cout << "put " << map.at(from).back() << " from column " << from + 1 << " in column " << to + 1 << '\n';
-        map.at(to).push_back(map.at(from).back());
-        map.at(from).pop_back();
+        size_t S = map.at(from).size() - me + i;
+        // cout << "put " << S << " from column " << from + 1 << " in column " << to + 1 << '\n';
+        map.at(to).push_back(map.at(from).at(S));
+        map.at(from).erase(map.at(from).begin() + S);
       }
       
     }
@@ -85,7 +87,7 @@ int main(int argc, char const *argv[]) {
     p1 << i.back();
   }
 
-  cout << "part 1: " << p1.str() << endl;
+  cout << "part 2: " << p1.str() << endl;
   // cout << "part 2: " << "" << endl;
   return 0;
 }
