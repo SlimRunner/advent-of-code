@@ -10,6 +10,7 @@
 #include <map>
 #include <tuple>
 #include <vector>
+#include <queue>
 
 #define IO_USE                                                                 \
   using std::cout;                                                             \
@@ -25,19 +26,13 @@ vecstring getInput(const argmap &);
 argmap getArgs(int, char const **);
 bool hasKey(const std::string &, const argmap &);
 
-int main(int argc, char const *argv[]) {
-  IO_USE;
-  argmap params = getArgs(argc, argv);
-  vecstring input = getInput(params);
-  if (hasKey("-v", params)) {
-    printLines(input);
-  }
-  string buff;
+int findCode(const std::string &src, size_t size) {
+  std::string buff;
   int nexit = 0;
 
-  for (auto &&i : input.front()) {
+  for (auto &&i : src) {
     ++nexit;
-    if (buff.length() < 14) {
+    if (buff.length() < size) {
       buff.push_back(i);
     } else {
       buff.push_back(i);
@@ -54,9 +49,19 @@ int main(int argc, char const *argv[]) {
       }
     }
   }
+  return nexit;
+}
+
+int main(int argc, char const *argv[]) {
+  IO_USE;
+  argmap params = getArgs(argc, argv);
+  vecstring input = getInput(params);
+  if (hasKey("-v", params)) {
+    printLines(input);
+  }
   
-  cout << "part 1: " << nexit << endl;
-  // cout << "part 2: " << "" << endl;
+  cout << "part 1: " << findCode(input.front(), 4) << endl;
+  cout << "part 2: " << findCode(input.front(), 14) << endl;
   return 0;
 }
 
