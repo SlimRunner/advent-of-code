@@ -75,7 +75,6 @@ def getScenic(coord, x, y, w, h):
       if here <= coord[(X, y)]:
         break
   score *= vis
-  print(vis)
   vis = 0
   for Y in reversed(range(0, y)):
     if Y is not y:
