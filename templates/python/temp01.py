@@ -2,7 +2,7 @@ import sys
 import re
 
 def main(args):
-  pre = lambda x: x
+  pre = lambda x: x.rstrip('\n')
   if "-ex" in args:
     lines = getLines("data.ex.txt", pred = pre)
   else:
