@@ -1,7 +1,6 @@
 import sys
 import re
 from functools import reduce
-import copy
 
 def main(args):
   pre = lambda x: x.rstrip('\n')
@@ -13,29 +12,29 @@ def main(args):
     runs = int(args[args.index("-r") + 1])
   else:
     runs = 20
-  tally = runTally(makeItinerary(lines))
-  p1 = reduce(lambda x, y : x * y, sorted(tally)[-2:])
+  prod = lambda x, y: x * y
+  itin = makeItinerary(lines)
+  itin2 = makeItinerary(lines)
+  tally = runTally(itin)
+  p1 = reduce(prod, sorted(tally)[-2:])
   print(tally)
   print(f"part 1: {p1}")
-
-  oldtally = runTally(makeItinerary(lines), 1, True)
-  for i in range(2,100):
-    tally = runTally(makeItinerary(lines), i, True)
-    print([a-b for (a,b) in zip(tally, oldtally)])
-    # print(tally)
-    oldtally = tally
-  # 14402160045 : too high
+  tally = runTally(itin2, 10000, True)
+  p2 = reduce(prod, sorted(tally)[-2:])
+  print(tally)
+  print(f"part 2: {p2}")
 
 def runTally(logs, runs = 20, worryFree = False):
+  cdiv = reduce(lambda x, y: x * y, [m["modulo"] for m in logs])
   tally = [0 for _ in range(0, len(logs))]
   for _ in range(0, runs):
     for idx, monkey in enumerate(logs):
       if len(monkey["items"]) > 0:
         for __ in range(0, len(monkey["items"])):
           if worryFree:
-            thisItem = monkey["worryup"](monkey["items"].pop(0))
+            thisItem = monkey["worryup"](monkey["items"].pop(0)) % cdiv
           else:
-            thisItem = monkey["worryup"](monkey["items"].pop(0)) // 3
+            thisItem = (monkey["worryup"](monkey["items"].pop(0)) // 3) % cdiv
           logs[monkey["decide"](thisItem)]["items"].append(thisItem)
           tally[idx] += 1
   return tally
@@ -61,11 +60,11 @@ def makeItinerary(logs):
         op = None
       items[monid]["worryup"] = op
     elif i == 3:
-      divtemp["divisor"] = int(log[21:])
+      items[monid]["modulo"] = int(log[21:])
     elif i == 4:
       divtemp["true"] = int(log[29:])
     elif i == 5:
-      items[monid]["decide"] = lambda x, a=divtemp["true"], b=int(log[30:]) , m=divtemp["divisor"] : a if x % m == 0 else b
+      items[monid]["decide"] = lambda x, a=divtemp["true"], b=int(log[30:]) , m=items[monid]["modulo"] : a if x % m == 0 else b
       divtemp = {}
     else:
       pass
