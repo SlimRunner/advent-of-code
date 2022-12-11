@@ -30,7 +30,7 @@ def runTally(logs, runs = 20, worryFree = False):
   for _ in range(0, runs):
     for idx, monkey in enumerate(logs):
       if len(monkey["items"]) > 0:
-        for __ in range(0, len(monkey["items"])):
+        for _ in range(0, len(monkey["items"])):
           if worryFree:
             thisItem = monkey["worryup"](monkey["items"].pop(0)) % cdiv
           else:
