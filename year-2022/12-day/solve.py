@@ -16,11 +16,11 @@ def main(args):
   pass
   steps = DFS(grid, vrid, srid, s, e)
   if "-vg" in args:
-    printGrid(grid)
+    printGrid(grid, 3)
   elif "-vv" in args:
-    printGrid(vrid)
+    printGrid(vrid, 3)
   elif "-vs" in args:
-    printGrid(srid)
+    printGrid(srid, 3)
   else:
     print(f"part 1: {steps}")
   # print(f"part 2: {}")
@@ -42,7 +42,6 @@ def DFS(grid, vrid, srid, start, goal):
     vrid[y][x] = 2
     srid[y][x] = step
     if here != goal:
-      reachedGoal = True
       nxt = dfsMoves(grid, vrid, srid, here)
       # print(nxt)
       if goal in nxt:
@@ -51,6 +50,8 @@ def DFS(grid, vrid, srid, start, goal):
       else:
         queue.extend(nxt)
         sueue.extend([step + 1] * len(nxt))
+    else:
+      reachedGoal = True
     # printGrid(srid)
   print(reachedGoal)
   return max(max(srid, key=max))
@@ -64,7 +65,7 @@ def dfsMoves(grid, vrid, srid, here):
   mout = []
   h = at(here, grid)
   for m in moves:
-    if (0<=m[0]<W and 0<=m[1]<H) and (abs(at(m, grid) - h) <= 1 and at(m, vrid) < 1): #at(m, srid) <= at(here, vrid)
+    if (0<=m[0]<W and 0<=m[1]<H) and (at(m, grid) - h <= 1 and at(m, vrid) < 1): #at(m, srid) <= at(here, vrid)
       x, y = m
       vrid[y][x] = 1
       mout.append(m)
@@ -95,9 +96,9 @@ def makeMap(args):
         output[j].append(h)
   return (start, end, output, vout, sout)
 
-def printGrid(grid):
+def printGrid(grid, pmax = -1):
   print()
-  nmax = len(str(max(max(grid, key=max))))
+  nmax = max(pmax, len(str(max(max(grid, key=max)))))
   for rows in grid:
     pout = ' '.join([
       " "*(nmax-len(str(n))) + (str(n) if n >= 0 else "*")
