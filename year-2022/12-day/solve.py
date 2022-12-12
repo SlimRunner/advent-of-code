@@ -1,5 +1,6 @@
 import sys
 import re
+import copy
 
 def main(args):
   pre = lambda x: x.rstrip('\n')
@@ -14,7 +15,8 @@ def main(args):
   # 3  0  1
   #    4
   pass
-  steps = DFS(grid, vrid, srid, s, e)
+  at = lambda h, g: g[h[1]][h[0]]
+  steps, aces, rg = BFS(grid, vrid, srid, s, e)
   if "-vg" in args:
     printGrid(grid, 3)
   elif "-vv" in args:
@@ -22,15 +24,26 @@ def main(args):
   elif "-vs" in args:
     printGrid(srid, 3)
   else:
-    print(f"part 1: {steps}")
-  # print(f"part 2: {}")
+    print(steps, s)
+    print(f"part 1: {steps}" + (" (goal)" if rg else " (failed)"))
+    s, e, grid, vrid, srid = makeMap(lines)
+    i = -1
+    stalt = steps
+    # print(aces[i], f": {at(aces[i], grid)}")
+    for a in reversed(aces):
+      steps, ace2, rg = BFS(copy.deepcopy(grid), copy.deepcopy(vrid), copy.deepcopy(srid), a, e)
+      if rg and stalt > steps:
+        stalt = steps
+        print(stalt, a)
+    print(f"part 2: {stalt}")
 
-def DFS(grid, vrid, srid, start, goal):
+def BFS(grid, vrid, srid, start, goal):
   at = lambda h, g = grid: g[h[1]][h[0]]
   steps = None
   queue = [start]
   sueue = [0]
   reachedGoal = False
+  aces = []
 
   while len(queue):
     # print(queue)
@@ -42,7 +55,9 @@ def DFS(grid, vrid, srid, start, goal):
     vrid[y][x] = 2
     srid[y][x] = step
     if here != goal:
-      nxt = dfsMoves(grid, vrid, srid, here)
+      nxt, ace = bfsMoves(grid, vrid, srid, here)
+      aces.extend(ace)
+      # ace.extend(bfsAces(grid, here))
       # print(nxt)
       if goal in nxt:
         queue = [goal]
@@ -53,23 +68,25 @@ def DFS(grid, vrid, srid, start, goal):
     else:
       reachedGoal = True
     # printGrid(srid)
-  print(reachedGoal)
-  return max(max(srid, key=max))
+  return (max(max(srid, key=max)), aces, reachedGoal)
   # 333: too low
 
-def dfsMoves(grid, vrid, srid, here):
+def bfsMoves(grid, vrid, srid, here):
   H, W = len(grid), len(grid[0])
   X, Y = here
   at = lambda h, g: g[h[1]][h[0]]
   moves = [(x + X, y + Y) for x, y in [(1, 0), (0, 1), (-1, 0), (0, -1)]]
   mout = []
+  aout = []
   h = at(here, grid)
   for m in moves:
+    if (0<=m[0]<W and 0<=m[1]<H) and (at(m, grid) == 0 and abs(at(m, grid) - h) <= 1 and at(m, vrid) < 1):
+      aout.append(m)
     if (0<=m[0]<W and 0<=m[1]<H) and (at(m, grid) - h <= 1 and at(m, vrid) < 1): #at(m, srid) <= at(here, vrid)
       x, y = m
       vrid[y][x] = 1
       mout.append(m)
-  return mout
+  return (mout, aout)
 
 def makeMap(args):
   output = []
