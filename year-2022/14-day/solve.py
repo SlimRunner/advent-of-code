@@ -7,38 +7,39 @@ def main(args):
     lines = getLines("data.ex.txt", pred = pre)
   else:
     lines = getLines("data.in.txt", pred = pre)
-  if "-somearg" in args:
-    pass # process or react to argument
+  printRes = "-v" in args
   # print your output
-  walls = getWalls(lines)
   src = (500, 0)
-  # print(walls)
-  particles = pourParticles(src, walls)
-  # print(particles)
-  print(f"part 1: {len(particles)}")
-  
   walls = getWalls(lines)
-  src = (500, -1)
-  particles = pourParticles(src, walls, True)
-  print(f"part 2: {len(particles)}")
-  # 312 : too low
+  if printRes: print(walls)
+  particles = pourParticles(src, walls)
+  if printRes: print(f"\n{particles}")
+  print(f"part 1: {len(particles)}")
 
-def pourParticles(src, walls, useFloor = False):
-  if useFloor:
-    ymax = max([y for x, y in walls]) + 2
-    walls.update({(i, ymax) for i in irange(src[0] - ymax, src[0] + ymax)})
+  walls = getWalls(lines)
+  addFloor(src, walls)
+  if printRes: print(f"\n\n{walls}")
+  particles = pourParticles(src, walls)
+  if printRes: print(f"\n{particles}")
+  print(f"part 2: {len(particles)}")
+
+def pourParticles(src, walls):
+  dropParticle.hmap = {}
+  src = (src[0], src[1] - 1)
   pout = []
   p = dropParticle(src, walls)
   while p is not None:
     if len(pout) % 5000 == 0 and len(pout) > 0:
-      print(len(pout))
+      print(f"\t{len(pout)} particles...")
     pout.append(p)
     p = dropParticle(src, walls)
   return pout
 
 def dropParticle(src, walls):
   xh, yh = src # here
-  landing = {y for x, y in walls if x == xh}
+  if xh not in dropParticle.hmap:
+    dropParticle.hmap[xh] = {y for x, y in walls if x == xh}
+  landing = dropParticle.hmap[xh]
   # print(landing)
   while len(landing) and yh + 1 < min(landing):
     # print(landing)
@@ -53,14 +54,23 @@ def dropParticle(src, walls):
       else:
         xh, yh = (xh - 1, yh + 1)
       pass
-    landing = {y for x, y in walls if x == xh and y > yh}
+    if xh not in dropParticle.hmap:
+      dropParticle.hmap[xh] = {y for x, y in walls if x == xh}
+    landing = [y for y in dropParticle.hmap[xh] if y > yh]
   restp = (xh, yh)
   if len(landing) and restp != src:
+    if xh not in dropParticle.hmap:
+      dropParticle.hmap[xh] = {y for x, y in walls if x == xh}
+    dropParticle.hmap[xh].add(yh)
     walls.add((xh, yh))
     return (xh, yh)
   else:
     return None
-  
+dropParticle.hmap = {}
+
+def addFloor(src, walls):
+  ymax = max([y for x, y in walls]) + 2
+  walls.update({(i, ymax) for i in irange(src[0] - ymax, src[0] + ymax)})
 
 def getWalls(lines):
   out = set()
