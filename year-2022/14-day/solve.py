@@ -12,17 +12,26 @@ def main(args):
   # print your output
   walls = getWalls(lines)
   src = (500, 0)
-  print(walls)
+  # print(walls)
   particles = pourParticles(src, walls)
-  print(particles)
+  # print(particles)
   print(f"part 1: {len(particles)}")
-  # print(f"part 2: {}")
+  
+  walls = getWalls(lines)
+  src = (500, -1)
+  particles = pourParticles(src, walls, True)
+  print(f"part 2: {len(particles)}")
   # 312 : too low
 
-def pourParticles(src, walls):
+def pourParticles(src, walls, useFloor = False):
+  if useFloor:
+    ymax = max([y for x, y in walls]) + 2
+    walls.update({(i, ymax) for i in irange(src[0] - ymax, src[0] + ymax)})
   pout = []
   p = dropParticle(src, walls)
   while p is not None:
+    if len(pout) % 5000 == 0 and len(pout) > 0:
+      print(len(pout))
     pout.append(p)
     p = dropParticle(src, walls)
   return pout
@@ -30,7 +39,9 @@ def pourParticles(src, walls):
 def dropParticle(src, walls):
   xh, yh = src # here
   landing = {y for x, y in walls if x == xh}
+  # print(landing)
   while len(landing) and yh + 1 < min(landing):
+    # print(landing)
     yh = min(landing) - 1
     slide = True
     while (xh, yh + 1) in walls and slide:
@@ -44,7 +55,7 @@ def dropParticle(src, walls):
       pass
     landing = {y for x, y in walls if x == xh and y > yh}
   restp = (xh, yh)
-  if len(landing):
+  if len(landing) and restp != src:
     walls.add((xh, yh))
     return (xh, yh)
   else:
@@ -60,7 +71,6 @@ def getWalls(lines):
       if (xfro == xto):
         out.update({(xto, i) for i in irange(yfro, yto)})
       elif (yfro == yto):
-        print
         out.update({(i, yto) for i in irange(xfro, xto)})
       xfro, yfro = xto, yto
   return out
