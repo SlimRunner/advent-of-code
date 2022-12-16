@@ -5,34 +5,77 @@ def main(args):
   pre = lambda x: x.rstrip('\n')
   if "-ex" in args:
     lines = getLines("data.ex.txt", pred = pre)
+    yat = 11
+    lim = (0, 20)
   else:
     lines = getLines("data.in.txt", pred = pre)
+    yat = 2000000
+    lim = (0, 4000000)
   # print your output
   coords = getCoords(lines)
-  printEqns(coords) # paste in Desmos and count manually
-  # parts = getPartitions(coords, 10)
-  # locked = sumDist(parts)
-  # print(parts)
-  # print(locked)
-  # print(f"part 1: {}")
-  # print(f"part 2: {}")
+  # printEqns(coords) # paste in Desmos and count manually
+  parts = reducePartitions(getPartitions(coords, yat))
+  occ = rowSlots(coords, yat)
+  print(f"part 1: {sumDist(parts) - occ}")
+  print(f"part 2: {findSpot(coords, lim)}")
+
+def findSpot(coords, rnge):
+  y, parts = findSlot(coords, rnge)
+  if parts is None or len(parts) > 2:
+    return None
+  x = (parts[0][1] + parts[1][0]) // 2
+  return x * 4000000 + y
+
+def findSlot(coords, rnge):
+  fro, to = rnge
+  for y in range(fro, to + 1):
+    p = trimPartitions(reducePartitions(getPartitions(coords, y)), fro, to)
+    if len(p) > 1:
+      return (y, p)
+  return None
+
+def rowSlots(coords, row):
+  a = len({s[0] for s, b, _ in coords if row == s[1]})
+  b = len({b[0] for s, b, _ in coords if row == b[1]})
+  return a + b
 
 def sumDist(parts):
   total = 0
-  L = 0
-  switch = False
-  clear = False
-  for p in parts:
-    x, v = p
-    if switch != v and v:
-      if clear:
-        total += x - L + 1
-      else:
-        L = x
-      clear = not clear
-    pass
+  for a, b in parts:
+    total += b - a + 1
   return total
 
+def reducePartitions(parts):
+  if parts[0][1] == False:
+    return None
+  c = 0
+  isL = True
+  lp = 0
+  out = []
+  for p, f in parts:
+    c += 1 if f else -1
+    if c == 1 and isL:
+      lp = p
+      isL = False
+    if c == 0 and not isL:
+      out.append((lp, p))
+      isL = True
+  if len(out) > 1:
+    for i in reversed(range(1, len(out))):
+      if out[i][0] - out[i - 1][1] <= 1:
+        a = out[i - 1][0]
+        _, b = out.pop(i)
+        out[-1] = (a, b)
+  return out
+
+def trimPartitions(parts, fro, to):
+  out = []
+  for a, b in parts:
+    if fro <= a <= to and fro <= b <= to:
+      out.append((a, b))
+    elif b > fro or a < to:
+      out.append((max(a, fro), min(b, to)))
+  return out
 
 # sensor -> (at, closest, manhattan)
 def getPartitions(sensors, row):
@@ -41,14 +84,20 @@ def getPartitions(sensors, row):
     xs, ys = sensor
     torow = abs(ys - row)
     if torow <= dist:
-      a = xs - torow
-      b = xs + torow
+      rdel = dist - torow
+      a = xs - rdel
+      b = xs + rdel
       P.append((a, True))
       P.append((b, False))
   return sorted(P, key=lambda x : x[0])
 
 def fixRange(x, y):
   return (min(x, y), max(x, y))
+
+def irange(x, y):
+  a = min(x, y)
+  b = max(x, y)
+  return range(a, b + 1)
 
 def getCoords(lines):
   out = []
