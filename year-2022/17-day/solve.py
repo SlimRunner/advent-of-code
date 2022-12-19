@@ -22,29 +22,6 @@ def main(args):
   p2 = makeAvalanche(hmap, streamit, rockit, 1000000000000)
   print(f"part 2: {p2}")
 
-  # 1576945244967 : too high
-  # 1553314121045 : too high
-  # 1514285714288 : too low (this is the example bruh wtf?)
-
-'''
-NEW APPROACH
-tower: height map of floor fixed at -1 for highest point
-streams: iterator of enumerated values
-rocks: iterator of enumerated rock shapes
-
-solve problem(tower, streams, rocks, N)
-  initialize a dictionary for cache
-  loop N times:
-    get memoized keys of current state(tower, streams, rocks)
-    check if these keys are in cache
-      at this point calculations must have looped
-      use cache to collapse the rest of calculations
-      break loop
-    drop rock to get new height map
-    use memoized keys to add new value to cache whose value is the height delta
-  return answer
-'''
-
 def makeAvalanche(hmap, streamit, rockit, nth):
   hoff = 0
   cache = {}
@@ -111,13 +88,7 @@ def isWithinWalls(rock, a, b):
   return len([0 for x, _ in rock if x < a or x >= b]) == 0
 
 def moveRock(rock, xd, yd):
-  return {(x + xd, y + yd) for x, y in rock}
-
-def isAbove(rock, hmap):
-  for x, y in rock:
-    if y < hmap[x]:
-      return False
-  return True  
+  return {(x + xd, y + yd) for x, y in rock} 
 
 def hasOverlap(a, b):
   for ia in a:
