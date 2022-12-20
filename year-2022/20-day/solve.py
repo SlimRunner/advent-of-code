@@ -13,15 +13,22 @@ def main(args):
     lines = getLines("data.ex.txt", pred = pre)
   else:
     lines = getLines("data.in.txt", pred = pre)
-  node, index, zeroth = makeIndex(lines)
+  
+  _, index, zeroth = makeIndex(lines)
   decriptNodes(index)
-  p1 = sum([traverseNode(zeroth, i * 1000).item for i in [1,2,3]])
+  p1 = getGroove(zeroth, index)
   print(f"part 1: {p1}")
-  node, index, zeroth = makeIndex(lines, 811589153)
-  for i in range(10):
+
+  _, index, zeroth = makeIndex(lines, 811589153)
+  for _ in range(10):
     decriptNodes(index)
-  p2 = sum([traverseNode(zeroth, i * 1000).item for i in [1,2,3]])
+  p2 = getGroove(zeroth, index)
   print(f"part 2: {p2}")
+
+def getGroove(zeroth, index):
+  size = len(index)
+  grooves = (getShortCycle(i, size) for i in range(1000,4000,1000))
+  return sum([traverseNode(zeroth, i).item for i in grooves])
 
 def decriptNodes(index):
   size = len(index) - 1
@@ -30,6 +37,7 @@ def decriptNodes(index):
     if move >= 0:
       nodesplice(node, traverseNode(node, move))
     else:
+      # nodesplice merges nodes forward so going back requires overshooting the target
       nodesplice(node, traverseNode(node, move - 1))
 
 def getShortCycle(steps, modulus):
@@ -49,7 +57,7 @@ def traverseNode(node, nth):
   return node
 
 def nodesplice(a, b):
-  # works only for forward splices
+  # works intuitively only for forward splices
   A, B, C, P, Q = a.prev, a, a.next, b, b.next
   if Q != B and B != P:
     # print([i.item for i in [A, B, C, P, Q]])
