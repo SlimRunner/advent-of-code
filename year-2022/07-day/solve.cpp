@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -8,6 +9,8 @@
 #include <array>
 #include <list>
 #include <map>
+#include <regex>
+#include <set>
 #include <tuple>
 #include <vector>
 
@@ -19,117 +22,118 @@
 
 using argmap = std::map<std::string, std::string>;
 using vecstring = std::vector<std::string>;
+using pathmap = std::map<std::string, int>;
 
 void printLines(const vecstring &);
 vecstring getInput(const argmap &);
 argmap getArgs(int, char const **);
 bool hasKey(const std::string &, const argmap &);
 
-class Token {
+enum class Command { CD = 0, LS = 1 };
+
+class Path {
 private:
+  Path* _parent;
+  bool _setPar;
+  std::map<std::string, Path*> _children;
+  std::map<std::string, int> _files;
   std::string _name;
 
 public:
-  Token(std::string name);
-  ~Token();
+  Path(std::string name);
+  ~Path();
 
-  std::string getName() const { return _name; }
-  void setName(std::string name) { _name = name; }
-  virtual size_t getSize() const = 0;
+  void setName(std::string name) noexcept { _name = name; }
+
+  std::string getName() noexcept { return _name; }
+
+  // Path(const Path& other) {
+  //   *this->_parent = *other._parent;
+  //   std::copy(other._children.cbegin(), other._children.cend(), this->_children.begin());
+  //   std::copy(other._files.cbegin(), other._files.cend(), this->_files.begin());
+  //   this->_name = other._name;
+  // }
+
+  // Path& operator = (const Path& rhs) {
+  //   *this->_parent = *rhs._parent;
+  //   std::copy(rhs._children.cbegin(), rhs._children.cend(), this->_children.begin());
+  //   std::copy(rhs._files.cbegin(), rhs._files.cend(), this->_files.begin());
+  //   this->_name = rhs._name;
+  //   return *this;
+  // }
+
+  std::map<std::string, Path*> getChildren() const {
+    return _children;
+  }
+
+  Path* getParent() {
+    if (_setPar) {
+      return _parent;
+    } else {
+      throw std::runtime_error("this path has no parent");
+    }
+  }
+
+  Path* findChild(std::string m) {
+    auto match = _children.find(m);
+    if (match != _children.end()) {
+      return match->second;
+    } else {
+      throw std::runtime_error("children queried does not exist");
+    }
+  }
+
+  void addChild(Path* child) {
+    _children.emplace(child->_name, child);
+  }
+
+  void addFile(std::string name, int size) {
+    _files.emplace(name, size);
+  }
+
 };
 
-Token::Token(std::string name) {}
+Path::Path(std::string name) : _name(name), _setPar(false) {}
 
-Token::~Token() {}
-
-class Dir : public Token {
-private:
-  std::map<std::string, Token*> _children;
-
-public:
-  Dir(std::string name);
-  ~Dir();
-
-  void addChildren(Token* child) {
-    if (_children.find(child->getName()) == _children.end()) {
-      _children.emplace(child->getName(), child);
-    }
-  }
-
-  bool hasChild(std::string name) const {
-    if (_children.size() == 0) return false;
-    auto found = _children.find(name);
-    return found != _children.end();
-  }
-
-  Token* findChild(std::string name) const {
-    auto found = _children.find(name);
-    if (found != _children.end()) {
-      return found->second;
-    }
-    throw std::runtime_error("Children not found\n");
-  }
-  
-  virtual size_t getSize() const override {
-    size_t size;
-    for (auto &&f : _children) {
-      size += f.second->getSize();
-    }
-    return size;
-  }
-};
-
-Dir::Dir(std::string name) : Token(name) {
-  _children = {};
+Path::~Path() {
+  _children.clear();
+  _files.clear();
 }
 
-Dir::~Dir() {}
-
-class File : public Token {
-private:
-  size_t _size;
-
-public:
-  File(std::string name, size_t size);
-  ~File();
-
-  virtual size_t getSize() const override { return _size; }
-};
-
-File::File(std::string name, size_t size) : Token(name), _size(size) {}
-
-File::~File() {}
-
-int getSizeSum(vecstring input) {
+Path* getSizeSum(vecstring comms) {
   IO_USE
-  string cmd;
-  Dir root("/");
-  Token* here;
-  for (auto &&line : input) {
-    if (line.at(0) == '$') {
-      cmd = line.substr(2, 2);
-      string param = line.substr(4);
-      cout << cmd << ": " << param << '\n';
-      if (cmd == "cd") {
-        if (param == "/") {
-          here = &root;
+  Path* curr;
+  bool parsing = false;
+  for (auto &&c : comms) {
+    if (c.at(0) == '$') {
+      parsing = false;
+      const string cm = c.substr(2, 2);
+      if (cm == "cd") {
+        string fn = c.substr(3);
+        if (fn == "/") {
+          curr = new Path("/");
+        } else if (fn == "..") {
+          curr = curr->getParent();
         } else {
-          cout << "before dyn cast\n";
-          Dir * dere = static_cast<Dir*>(here);
-          if (!dere) cout << "cast failed\n";
-          if (!dere->hasChild(param)) {
-            cout << "after\n";
-            Dir* newDir = new Dir(param);
-            dere->addChildren(newDir);
-          }
+          curr = curr->findChild(fn);
         }
+      } else if (cm == "ls") {
+        parsing = true;
       }
     } else {
+      std::smatch matches;
+      if (std::regex_search(c, matches, std::regex("^(\\w+) [\\w\\.]+"))) {
+        auto mit = ++matches.begin();
+        std::string m1 = mit->str(), m2 = (++mit)->str();
+        if (m1 == "dir") {
+          curr->addChild(new Path(m2));
+        } else {
+          curr->addFile(m2, std::stoi(m1));
+        }
+      }
     }
   }
-
-  cout << '\n';
-  return 1;
+  return curr;
 }
 
 int main(int argc, char const *argv[]) {
@@ -140,8 +144,13 @@ int main(int argc, char const *argv[]) {
     printLines(input);
   }
 
-  cout << "part 1: " << getSizeSum(input) << endl;
-  // cout << "part 2: " << "" << endl;
+  Path paths("/");
+  Path * dir = getSizeSum(input); // <- this crashes at runtime
+  pathmap map;
+
+  // cout << "part 1: " << getSizeSum() << endl;
+  cout << "name of root" << paths.getName();
+  cout << "part 2: " << "" << endl;
   return 0;
 }
 
