@@ -9,48 +9,39 @@ def main(args):
   else:
     lines = getLines("data.in.txt", pred = pre)
   pass
-  pairs = copy.copy(lines)
-  print(f"part 1: {consumePairs(pairs)}")
+  pairep = comPairs(getPairs(lines))
+  p1 = sum([(i + 1) for i, p in enumerate(pairep) if p > 0])
+  print(f"part 1: {p1}")
   # print(f"part 2: {}")
   # print(dlistify(list(pairs[22][1:-1]), []))
   # 4585: too low
 
-def consumePairs(pairs):
-  i = 1
-  s = 0
-  while len(pairs):
-    a, b = dlistify(list(pairs[0][1:-1]), []), dlistify(list(pairs[1][1:-1]), [])
-    pairs = pairs[3:]
-    if reducePairs(a, b):
-      print(f"{i} correct")
-      s += i
-    else:
-      print(f"{i} WRONG")
-      pass
-    i += 1
-  return s
+def comPairs(pairs):
+  return [compare(a, b) for a, b in pairs]
 
-def reducePairs(a, b):
-  # WIP
-  # x, y = a.pop(0), b.pop(0)
-  # df = compare(a, b)
-  # while df == 0:
-  #   x, y = a.pop(0), b.pop(0)
-  # -------------
-  while len(a):
-    # print(a,b)
-    x = a.pop(0)
-    if len(b) > 0:
-      y = b.pop(0)
+def getPairs(pairs):
+  out = []
+  for i in range(0, len(pairs), 3):
+    a, b = listify(pairs[i]), listify(pairs[i + 1])
+    out.append((a, b))
+  return out
+
+def compare(x, y):
+  x, y = likify(x, y)
+  if isinstance(x, int):
+    return y - x
+  else:
+    xl, yl = len(x), len(y)
+    sl = min(xl, yl)
+    c = 0
+    for i in range(sl):
+      c = compare(x[i], y[i])
+      if c != 0:
+        break
+    if c == 0:
+      return yl - xl
     else:
-      return False
-    x, y = likify(x, y)
-    if isinstance(x, int):
-      if x > y:
-        return False
-    else:
-      return reducePairs(x, y)
-  return True
+      return c
 
 def likify(x, y):
   if type(x) != type(y):
@@ -61,26 +52,28 @@ def likify(x, y):
   else:
     return (x, y)
 
-def dlistify(s, l):
+def listify(text):
+  return relistify(list(text)[1:])
+
+def relistify(chars):
+  out = []
   buff = ""
-  while len(s) > 0:
-    c = s.pop(0)
+  while len(chars) > 0:
+    c = chars.pop(0)
     if c == "[":
-      l.append(dlistify(s, []))
+      out.append(relistify(chars))
     elif c == "]":
       if len(buff) > 0:
-        l.append(int(buff))
+        out.append(int(buff))
         buff = ""
-      return l
+      break
     elif c == ",":
       if len(buff) > 0:
-        l.append(int(buff))
+        out.append(int(buff))
         buff = ""
     elif c in "0123456789":
       buff += c
-  if len(buff) > 0:
-    l.append(int(buff))
-  return l
+  return out
 
 def getLines(fn, **kw):
   pred = (lambda x: x) if "pred" not in kw else kw["pred"]
