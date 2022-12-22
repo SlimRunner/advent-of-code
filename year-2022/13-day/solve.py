@@ -1,6 +1,9 @@
 import sys
 import re
-import copy
+from functools import cmp_to_key as sortleg
+from functools import reduce
+import operator
+from pprint import pprint
 
 def main(args):
   pre = lambda x: x.rstrip('\n')
@@ -9,20 +12,28 @@ def main(args):
   else:
     lines = getLines("data.in.txt", pred = pre)
   pass
-  pairep = comPairs(getPairs(lines))
-  p1 = sum([(i + 1) for i, p in enumerate(pairep) if p > 0])
+  pairs = getPairs(lines)
+  ordering = [compare(a, b) for a, b in pairs]
+  p1 = sum([(i + 1) for i, p in enumerate(ordering) if p > 0])
   print(f"part 1: {p1}")
-  # print(f"part 2: {}")
-  # print(dlistify(list(pairs[22][1:-1]), []))
-  # 4585: too low
 
-def comPairs(pairs):
-  return [compare(a, b) for a, b in pairs]
+  separators = [[[2]], [[6]]]
+  nlists = getLists(lines) + separators
+  nlists.sort(key = sortleg(compare), reverse=True)
+  p2 = reduce(operator.mul, [i + 1 for i, n in enumerate(nlists) if n in separators])
+  print(f"part 2: {p2}")
 
-def getPairs(pairs):
+def getLists(lines):
   out = []
-  for i in range(0, len(pairs), 3):
-    a, b = listify(pairs[i]), listify(pairs[i + 1])
+  for i in range(0, len(lines), 3):
+    a, b = listify(lines[i]), listify(lines[i + 1])
+    out.extend((a, b))
+  return out
+
+def getPairs(lines):
+  out = []
+  for i in range(0, len(lines), 3):
+    a, b = listify(lines[i]), listify(lines[i + 1])
     out.append((a, b))
   return out
 
