@@ -62,7 +62,6 @@ def main(args):
   root = buildDirectory(tdump)
   sizes, sindex = root.getFolderSizes()
   p1 = sum([s for s in sindex if s <= 100000])
-  print(sizes)
   print(f"part 1: {p1}")
 
   sindex.sort()
