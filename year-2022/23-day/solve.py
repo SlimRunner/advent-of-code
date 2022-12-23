@@ -26,13 +26,16 @@ def main(args):
     (WEST, (WEST, WEST | NORTH, WEST | SOUTH)),
     (EAST, (EAST, EAST | NORTH, EAST | SOUTH))
   ])
-  elves, maxiter = iterRules(elves, plans, 100000)
-  if visualize:
-    print(f"maxiter: {maxiter}")
-    print2D(elves, 0)
+  elves, _ = iterRules(elves, plans, 10)
   p1 = countBlanks(elves)
-  print(f"part 1: {p1}")
-  # print(f"part 2: {}")
+  print(f"part 1: {p1} blanks")
+  if visualize:
+    print2D(elves, 0)
+  elves, iterRest = doRules(elves, plans)
+  p2 = iterRest + 10
+  print(f"part 2: {p2} rounds")
+  if visualize:
+    print2D(elves, 0)
 
 def countBlanks(elves):
   total = 0
@@ -44,6 +47,15 @@ def countBlanks(elves):
     else:
       total += ysize
   return total
+
+def doRules(elves, plans):
+  count = 0
+  elves, moved = moveElves(elves, plans)
+  count = 1 if moved else 0
+  while moved:
+    elves, moved = moveElves(elves, plans)
+    count += 1
+  return (elves, count)
 
 def iterRules(elves, plans, count):
   for i in range(count):
@@ -77,8 +89,8 @@ def propMove(elves, plans):
     for elve in elves:
       if elve in elvesTo:
         continue
-      around = [moveBy(elve, m) for m in d8]
-      haveNeighbor = [n in elves for n in around]
+      around = (moveBy(elve, m) for m in d8)
+      haveNeighbor = (n in elves for n in around)
       if not reduce(orAny, haveNeighbor):
         elvesTo[elve] = elve
         allowed[elve] = False
@@ -148,7 +160,7 @@ def doIt(lst):
       yield l
 
 def print2D(coords, padding = 0):
-  print(coords)
+  # print(coords)
   _, _, (xmin, xmax), (ymin, ymax) = make2Dindex(coords)
   xmax += padding
   xmin -= padding
