@@ -50,8 +50,9 @@ def BFS(start, goal, terr, bliz, warps):
     # if len(nths) == 1:
     #   os.system("cls")
     #   print(len(queue))
-    #   printBFS(terr, nBliz, elves)
-    #   time.sleep(0.3)
+    #   printBFS(terr, nBliz, elves, True)
+    #   # printGrid(terr, nBliz)
+    #   time.sleep(0.02)
     if here == goal:
       return (nth, nBliz)
     queue.extend(nextMoves((here, nth, cost, nBliz), terr, warps, queue, goal))
@@ -136,7 +137,7 @@ def makeMap(lines):
         blizz[(x, y)] = INT2BLIZ[char]
   return terrain, blizz, start, goal
 
-def printBFS(grid, bliz, elf):
+def printBFS(grid, bliz, elf, hideBliz = False):
   print()
   arrows = "→↓←↑"
   out = ""
@@ -148,7 +149,7 @@ def printBFS(grid, bliz, elf):
       # dot or blizzard
       blz = [arrows[i] for i, p in enumerate([1, 2, 4, 8]) if (x, y) in bliz and bliz[(x, y)] & p]
       el = "▼" if (x, y) in elf else "."
-      db = (el if not len(blz) else (blz[0] if len(blz) == 1 else str(len(blz))))
+      db = (el if hideBliz or not len(blz) else (blz[0] if len(blz) == 1 else str(len(blz))))
       line[x] = "▄" if grid[y][x] else db
     out += " ".join(line) + "\n"
   print(out[:-1])
