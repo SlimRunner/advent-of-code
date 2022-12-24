@@ -1,8 +1,10 @@
 import sys
+import glob
 import re
 import os
 import time
 from math import lcm
+import random
 
 RIGHT = 1
 DOWN = 2
@@ -15,8 +17,10 @@ INT2XY = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
 def main(args):
   pre = lambda x: x.rstrip('\n')
-  if "-ex" in args:
-    lines = getLines("data.ex.txt", pred = pre)
+  if "ex" in args:
+    examples = glob.glob("*.ex.txt")
+    einx = (int(args["ex"][0]) if len(args["ex"]) else 0) % len(examples)
+    lines = getLines(examples[einx], pred = pre)
   else:
     lines = getLines("data.in.txt", pred = pre)
   if "-somearg" in args:
@@ -24,37 +28,38 @@ def main(args):
   # print your output
   terr, bliz, start, goal = makeMap(lines)
   warps = makeWarps(terr)
-  p1 = BFS(start, goal, terr, bliz, warps)
+  p1, bliz = BFS(start, goal, terr, bliz, warps)
   print(f"part 1: {p1}")
-  # print(f"part 2: {}")
+  n, bliz = BFS(goal, start, terr, bliz, warps)
+  p2 = n + p1
+  n, _ = BFS(start, goal, terr, bliz, warps)
+  p2 += n
+  print(f"part 2: {p2}")
   # p1: 555 ; too high
   # p1: 529 ; too high
   # p1: 462 ; too high
   # p1: 401 ; too high
 
 def BFS(start, goal, terr, bliz, warps):
-  visited = {}
-  # os.system("cls")
-  # printGrid(terr, bliz, start)
-  # print(f"minute: {0}")
-  # time.sleep(0.05)
-  queue = nextMoves((start, 0, 0, bliz), terr, warps, start, goal)
+  once = True
+  queue = nextMoves((start, 0, 0, bliz), terr, warps, [], goal, True)
   while len(queue):
-    queue = trimSearch(queue, goal, 500, 1000)
-    # print(len(queue))
-    if len(queue) == 0: print(nth)
     here, nth, cost, nBliz = queue.pop(0)
-    # os.system("cls")
-    # printGrid(terr, nBliz, here)
-    # print(f"minute: {nth}")
-    # time.sleep(0.05)
+    # elves = {a for a, b, c, d in queue}
+    # nths = {b for a, b, c, d in queue}
+    # if len(nths) == 1:
+    #   os.system("cls")
+    #   print(len(queue))
+    #   printBFS(terr, nBliz, elves)
+    #   time.sleep(0.3)
     if here == goal:
-      return nth
-    queue.extend(nextMoves((here, nth, cost, nBliz), terr, warps, start, goal))
+      return (nth, nBliz)
+    queue.extend(nextMoves((here, nth, cost, nBliz), terr, warps, queue, goal))
+    # queue = trimSearch(queue, goal, 180, 200)
   return None
 
 def trimSearch(queue, goal, lower, upper):
-  if len(queue) >= upper:
+  if len(queue) >= upper and len({b for a, b, c, d in queue}) == 1:
     costs = []
     xg, yg = goal
     for node in queue:
@@ -65,25 +70,18 @@ def trimSearch(queue, goal, lower, upper):
     return Q
   return queue
 
-def nextMoves(here, terr, warps, start, goal):
+def nextMoves(here, terr, warps, queue, goal, clear = False):
+  ymax = len(terr)
+  qxy = {(x, y, nth) for (x, y), nth, _, _ in queue}
   (xh, yh), nth, cost, bliz = here
-  bliz = moveBlizz(bliz, warps, nth)
-  MOVES = [(xh + x, yh + y) for x, y in [(1, 0), (0, 1), (-1, 0), (0, -1)]]
+  bliz = moveBlizz(bliz, warps, nth, clear)
+  MOVES = [(xh + x, yh + y) for x, y in [(1, 0), (0, 1), (0, 0), (-1, 0), (0, -1)]]
   newMoves = [
-    ((x, y), nth + 1, cost + abs(goal[0] - x) + abs(goal[1] - y) + nth + 1, bliz)
+    ((x, y), nth + 1, cost + abs(goal[0] - x) + abs(goal[1] - y), bliz)
     for x, y in MOVES
-    if (y >= 0) and ((x, y) not in bliz) and
-    terr[y][x] == 0 and (x, y) != start
+    if (0 <= y < ymax)  and ((x, y) not in bliz) and
+    terr[y][x] == 0 and (x, y, nth + 1) not in qxy
   ]
-  while not len(newMoves):
-    nth += 1
-    bliz = moveBlizz(bliz, warps, nth)
-    newMoves = [
-      ((x, y), nth + 1, cost + abs(goal[0] - x) + abs(goal[1] - y) + nth + 1, bliz)
-      for x, y in MOVES
-      if (y >= 0) and ((x, y) not in bliz) and
-      terr[y][x] == 0 and (x, y) != start
-    ]
   return newMoves
 
 def makeWarps(terr):
@@ -100,7 +98,8 @@ def makeWarps(terr):
         warps[(x, y)] = (xmax - x - (0 if x else 2), y)
   return warps
 
-def moveBlizz(bliz, warps, nth):
+def moveBlizz(bliz, warps, nth, clear = False):
+  if clear: moveBlizz.cache = {}
   if nth in moveBlizz.cache:
     return moveBlizz.cache[nth]
   nBliz = {}
@@ -137,6 +136,23 @@ def makeMap(lines):
         blizz[(x, y)] = INT2BLIZ[char]
   return terrain, blizz, start, goal
 
+def printBFS(grid, bliz, elf):
+  print()
+  arrows = "→↓←↑"
+  out = ""
+  ymax = len(grid)
+  xmax = len(grid[0])
+  line = ["" for _ in range(xmax)]
+  for y in range(ymax):
+    for x in range(xmax):
+      # dot or blizzard
+      blz = [arrows[i] for i, p in enumerate([1, 2, 4, 8]) if (x, y) in bliz and bliz[(x, y)] & p]
+      el = "▼" if (x, y) in elf else "."
+      db = (el if not len(blz) else (blz[0] if len(blz) == 1 else str(len(blz))))
+      line[x] = "▄" if grid[y][x] else db
+    out += " ".join(line) + "\n"
+  print(out[:-1])
+
 def printGrid(grid, bliz, here = None):
   print()
   arrows = "→↓←↑"
@@ -165,4 +181,12 @@ def getLines(fn, **kw):
   return output
 
 if __name__ == '__main__':
-  main(sys.argv)
+  args = {}
+  lkey = None
+  for arg in sys.argv:
+    if arg[0] == "-":
+      lkey = arg[1:]
+      args[lkey] = []
+    elif len(args) and lkey is not None:
+      args[lkey].append(arg)
+  main(args)
