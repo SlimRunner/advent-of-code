@@ -4,13 +4,13 @@ import re
 
 def main(args):
   pre = lambda x: x.rstrip('\n')
-  if "-ex" in args:
+  if "ex" in args:
     examples = glob.glob("*.ex.txt")
     einx = (int(args["ex"][0]) if len(args["ex"]) else 0) % len(examples)
     lines = getLines(examples[einx], pred = pre)
   else:
     lines = getLines("data.in.txt", pred = pre)
-  if "-somearg" in args:
+  if "somearg" in args:
     pass # process or react to argument
   # print your output
   print(f"lines: {lines}") # test message
