@@ -22,22 +22,34 @@ def main(args):
   # print("🤖")
   # print(dijkstra([(0, 0, 0, 0), (1, 0, 0, 0)], bps[0], 24))
   # print(dijkstra([(0, 0, 0, 0), (1, 0, 0, 0)], bps[1], 24))
+  print(dijkstra([(0, 0, 0, 0), (1, 0, 0, 0)], bps[0], 32))
   # print(getPrices((0,1,1,1), bps[0]))
   # print(windowShop(getPrices((0,1,1,1), bps[0]), bps[0]))
 
-  startTime = time.time()
-  yields24 = findMaxYields(bps, 24)
-  p1 = sum([(i + 1) * yld for i, yld in enumerate(yields24)])
-  print("Runtime: %s" % (time.time() - startTime))
-  print(f"part 1: {p1}")
+  # startTime = time.time()
+  # yields24 = findMaxYields(bps, 24)
+  # p1 = sum([(i + 1) * yld for i, yld in enumerate(yields24)])
+  # print("Runtime: %s" % (time.time() - startTime))
+  # print(f"part 1: {p1}")
 
   # startTime = time.time()
   # yields32 = findMaxYields(bps[:3], 32)
   # print("Runtime: %s" % (time.time() - startTime))
   # p2 = reduce(lambda x, y: x * y, yields32)
   # print(f"part 2: {p2}")
+
   # 13340 : too low for p2
   # 15180 : too low for p2
+  # 11760 : WRONG (full heuristics)
+  # 15180 : STILL WRONG (no canOutdoBest)
+
+  '''
+  ID: 1 yields 10 at best
+  ID: 2 yields 33 at best
+  ID: 3 yields 46 at best
+  Runtime: 4253.614860534668
+  part 2: 15180
+  '''
 
 def findMaxYields(blueprints, maxdepth):
   entry = [(0, 0, 0, 0), (1, 0, 0, 0)]
@@ -50,15 +62,10 @@ def findMaxYields(blueprints, maxdepth):
   # return [dijkstra(entry, bp, maxdepth) for bp in (blueprints)]
 
 def dijkstra(inventory, blueprint, maxdepth):
-  hW = [0,0,0,1 ] #tuple(1 / (p + 1) for p in getPrices((1,1,1,1), blueprint))
+  hW = [0,0,0,1] #tuple(1 / (p + 1) for p in getPrices((1,1,1,1), blueprint))
   rW = [0,0,0,1] #tuple(1 / p for p in windowShop(getPrices((1,1,1,1), blueprint), blueprint))
   # print(hW)
   # print(rW)
-  def wsum(vals, weights):
-    return vals[-1]
-    if len(vals) != len(weights):
-      raise ValueError("Arrays are not the same size")
-    return sum((v * w for v, w in zip(vals, weights)))
   bestNode = None
   maxlen = 0
   optimal = None
@@ -101,11 +108,11 @@ def dijkstra(inventory, blueprint, maxdepth):
         # canOutdoBest = True if depthmap[time + 1] is None else newHarvest[-1] >= depthmap[time + 1]
         if canShop and not couldBuildEarlier[i]:
           # 1 -> shopQuota[i]
-          quota = tuple(1 if i == j else 0 for j in range(len(blueprint)))
+          quota = tuple(shopQuota[i] if i == j else 0 for j in range(len(blueprint)))
           price = getPrices(quota, blueprint)
           nextHarvest = tuple(a - b for a, b in zip(newHarvest, price))
           nextRobots = tuple(a + b for a, b in zip(robots, quota))
-          canOutdoBest = nextHarvest[-1] + (lambda x: x * (x + 1) // 2)(maxdepth - time) > (0 if optimal is None else optimal)
+          canOutdoBest = nextHarvest[-1] + (lambda x: x * (x + 1) // 2)(maxdepth - time) >= (0 if optimal is None else optimal)
           if canOutdoBest:
             newShopQuota = [0, 0, 0, 0]
             # newQueue.append((nextHarvest, nextRobots, time + 1, newShopQuota, nextNode))
@@ -124,7 +131,6 @@ def dijkstra(inventory, blueprint, maxdepth):
 
 def printTrace(node, verbose = False):
   itab = " " * 4
-  mats = ["ore", "clay", "obsidian", "geode"]
   winTrace = []
   print("=" * 32)
   names = ["ore", "clay", "obsidian", "geode"]
